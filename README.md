@@ -1,10 +1,13 @@
-# App Compiler — Frontend
+# SchemaForge — AI Schema Generation Platform [Live Link: SchemaForge](https://schemaforge-ai.vercel.app) | [GitHub: SchemaForge AI Frontend](https://github.com/Lithinpavansai/AI_Builder_frontend)
 
-> Clean developer UI for the App Compiler pipeline
+FastAPI · Next.js · Groq API · Pydantic v2 · Render · Vercel
+
+• Built a single-pass LLM pipeline (Intent Extraction → System Design → Schema Generation → Refinement) that converts natural language into UI, API, DB, and Auth schemas in one JSON output, consolidating 5 LLM calls into 1.
+• Built a 0–100 runtime validator (6 structural checks); tested on 23 prompts incl. adversarial cases: 100% completion, 84/100 average. A manual audit of 3 outputs caught a real cross-layer bug (Admin-only rule vs. config allowing Customer).
 
 ## 🚀 Live URL
 
-`https://ai-builder-frontend-ten.vercel.app`
+`https://schemaforge-ai.vercel.app`
 
 ## 📄 Pages
 
@@ -26,7 +29,7 @@
 ## 🏃 Local Setup
 
 ```bash
-git clone https://github.com/Pavansailithen/AI_Builder_frontend.git
+git clone https://github.com/Lithinpavansai/AI_Builder_frontend.git
 cd AI_Builder_frontend
 npm install
 # Add NEXT_PUBLIC_API_URL=http://127.0.0.1:8000 to .env.local
