@@ -27,6 +27,29 @@ const SCHEMA_TABS = [
   { id: 'metadata', label: 'Context', icon: 'ℹ️' }
 ]
 
+function getErrorHeadline(error: string): string {
+  const errLower = error.toLowerCase()
+  if (errLower.includes('daily token limit') || errLower.includes('tokens per day') || errLower.includes('tpd')) {
+    return 'Groq Daily Token Limit Reached'
+  }
+  if (errLower.includes('rate limit') || errLower.includes('429') || errLower.includes('tpm') || errLower.includes('rpm')) {
+    return 'Groq Rate Limit Exceeded'
+  }
+  if (errLower.includes('json') || errLower.includes('decode') || errLower.includes('parse')) {
+    return 'JSON Parsing Failed'
+  }
+  if (errLower.includes('timeout') || errLower.includes('timed out')) {
+    return 'Pipeline Request Timed Out'
+  }
+  if (errLower.includes('payload too large') || errLower.includes('413')) {
+    return 'Prompt Payload Too Large'
+  }
+  if (errLower.includes('validation')) {
+    return 'Schema Validation Failed'
+  }
+  return 'Build Pipeline Halted'
+}
+
 export default function GeneratePage() {
   const params = useParams()
   const router = useRouter()
@@ -37,6 +60,7 @@ export default function GeneratePage() {
   const [progress, setProgress] = useState(0)
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
+  const [latency, setLatency] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState('ui')
   const [copied, setCopied] = useState(false)
 
@@ -50,11 +74,24 @@ export default function GeneratePage() {
         setCurrentStage(data.current_stage)
         setProgress(data.progress || 0)
 
+        if (data.latency_seconds !== undefined && data.latency_seconds !== null) {
+          setLatency(data.latency_seconds)
+        } else if (data.created_at && data.completed_at) {
+          const start = new Date(data.created_at).getTime()
+          const end = new Date(data.completed_at).getTime()
+          if (!isNaN(start) && !isNaN(end)) {
+            setLatency(Math.max(0, Math.round((end - start) / 100) / 10))
+          }
+        }
+
         if (data.status === 'completed') {
           clearInterval(interval)
           const resultRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/result/${job_id}`)
           const resultData = await resultRes.json()
           setResult(resultData.result?.schema || null)
+          if (resultData.latency_seconds !== undefined && resultData.latency_seconds !== null) {
+            setLatency(resultData.latency_seconds)
+          }
         }
         if (data.status === 'failed') {
           clearInterval(interval)
@@ -166,7 +203,7 @@ export default function GeneratePage() {
           <div className="grid grid-cols-2 gap-4">
              <div className="bg-[#08080a]/60 border border-zinc-800/40 rounded-2xl p-4 shadow-sm hover:border-[#00f0ff]/20 transition-all">
                 <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1 font-mono">// Latency</div>
-                <div className="text-sm font-bold text-white font-mono">12.4s</div>
+                <div className="text-sm font-bold text-white font-mono">{latency !== null ? `${latency.toFixed(1)}s` : '—'}</div>
              </div>
              <div className="bg-[#08080a]/60 border border-zinc-800/40 rounded-2xl p-4 shadow-sm hover:border-[#00f0ff]/20 transition-all">
                 <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1 font-mono">// Provider</div>
@@ -181,8 +218,12 @@ export default function GeneratePage() {
           {error && (
             <div className="bg-[#0c0c0f]/80 border border-rose-800/40 rounded-3xl p-10 shadow-2xl shadow-rose-950/20 text-center animate-shake">
                <div className="w-16 h-16 bg-rose-950/40 text-[#ff716c] border border-rose-800/30 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl">✗</div>
-               <h2 className="text-xl font-bold text-white mb-2 font-mono">Build Pipeline Halted</h2>
-               <p className="text-sm text-zinc-500 mb-8 max-w-sm mx-auto">{error}</p>
+               <h2 className="text-xl font-bold text-white mb-2 font-mono">{getErrorHeadline(error)}</h2>
+               <div className="bg-rose-950/20 border border-rose-900/40 rounded-xl p-4 mb-8 max-w-2xl mx-auto text-left max-h-64 overflow-y-auto">
+                 <p className="text-xs text-rose-300 font-mono leading-relaxed break-words whitespace-pre-wrap select-text">
+                   {error}
+                 </p>
+               </div>
                <button onClick={() => router.push('/')} className="bg-[#00f0ff] hover:bg-cyan-400 text-black px-8 py-3 rounded-xl text-sm font-bold font-mono tracking-wider shadow-lg shadow-cyan-500/10 hover:shadow-glow-cyan transition-all">
                   BACK TO DRAFTING
                </button>

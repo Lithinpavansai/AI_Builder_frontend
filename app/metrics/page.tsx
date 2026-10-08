@@ -101,32 +101,6 @@ export default function MetricsPage() {
               </div>
             </div>
 
-            {/* Failure Breakdown */}
-            {report.failure_analysis.total_failures > 0 && (
-              <div className="glass bg-[#08080a]/80 border border-zinc-800/40 rounded-3xl p-8 shadow-2xl shadow-cyan-950/10 mb-12">
-                <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6 flex items-center gap-2 font-mono">
-                  <span className="text-[#ff716c]">⚠</span> Failure Analysis
-                </h2>
-                <div className="flex gap-4 flex-wrap mb-8">
-                  {Object.entries(report.failure_analysis.failure_breakdown).map(([type, count]: any) => (
-                    <div key={type} className="bg-zinc-950 border border-zinc-900 rounded-xl px-4 py-3 shadow-inner">
-                      <span className="text-[#ff716c] text-sm font-bold font-mono">{count}</span>
-                      <span className="text-zinc-500 text-[9px] font-bold font-mono uppercase tracking-widest ml-3">{type}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="space-y-2 bg-[#050507] rounded-2xl p-6 border border-zinc-900">
-                  {report.failure_analysis.failed_prompts.map((f: any) => (
-                    <div key={f.id} className="flex items-center gap-6 py-2.5 border-b border-zinc-900 last:border-0">
-                      <span className="font-mono text-zinc-600 text-xs w-10">{f.id}</span>
-                      <span className="text-zinc-300 text-xs font-bold font-mono w-40">{f.category.toUpperCase()}</span>
-                      <span className="text-[#ff716c] text-xs font-mono font-medium">{f.reason}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Results Table */}
             <div className="bg-[#08080a]/60 border border-zinc-800/40 rounded-3xl shadow-2xl shadow-cyan-950/10 overflow-hidden">
               <div className="px-8 py-6 border-b border-zinc-900/60 flex items-center justify-between bg-zinc-950/40">
